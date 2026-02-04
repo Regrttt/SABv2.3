@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super AI Bros. - Alpha v2.3</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="main-wrapper">
+        <h1>Super AI Bros.</h1>
+        <div id="gameContainer">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            <!-- Botão de pause desenhado no Canvas -->
+        </div>
+        <div class="instructions">
+            <p><b>PROJETO ALPHA (100% IA):</b> Todo o conteúdo visual e mecânico é experimental e sujeito a alterações na versão final.</p>
+            <p><b>CONTROLES:</b> Setas para Mover e Pular. <b>BARRA DE ESPAÇO</b> para Interagir. <b>R</b> para Reiniciar. <b>P</b> para Pausar.</p>
+            <p><b>OBJETIVO:</b> Sua pontuação dita o seu progresso. Colete moedas para sobreviver e avançar.</p>
+        </div>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay"></div>
+    <div id="patchNotesContainer" class="patch-notes">
+        <button id="closePatchNotes" class="close-button">&times;</button>
+        
+        <h2>Patch Notes (Alpha v2.3)</h2>
+        <p class="patch-date">03 fev, 2026</p>
+        
+        <ul>
+            <li><b>Ferramentas de Desenvolvedor (Debug 2.0):</b>
+                <ul>
+                    <li><b>Redesign Completo:</b> Novo visual azul translúcido com integração perfeita da aba lateral.</li>
+                    <li><b>Spawn Inteligente:</b> Ferramentas de criação de objetos agora funcionam isoladamente, sem gerar terreno procedural indesejado.</li>
+                    <li><b>Info em Tempo Real:</b> Monitoramento de FPS, contagem de entidades e posição do jogador.</li>
+                    <li><b>Sistema de Recompensa:</b> Zerar o jogo desbloqueia permanentemente o Código Secreto no Menu Principal.</li>
+                </ul>
+            </li>
+            <li><b>Menus e Configurações:</b>
+                <ul>
+                    <li><b>Novo Menu de Pause:</b> Reconstruído com opções para Continuar, Acessar Opções ou Voltar ao Menu Principal.</li>
+                    <li><b>Configuração de Controles:</b> Agora é possível remapear todas as teclas do jogo.</li>
+                    <li><b>Opção "Reduzir Partículas":</b> Nova configuração para melhorar a performance ou reduzir a poluição visual, simplificando os efeitos de fumaça e brilho.</li>
+                    <li><b>Áudio Persistente:</b> O volume da música e efeitos sonoros agora fica salvo entre sessões.</li>
+                </ul>
+            </li>
+            <li><b>Imersão e "Game Feel":</b>
+                <ul>
+                    <li><b>Tensão Atmosférica:</b> As bordas da tela escurecem verticalmente quando o Boss da Fase 1 fica enfurecido.</li>
+                    <li><b>Feedback de Dano:</b> Bosses agora piscam em vermelho translúcido ao receberem dano.</li>
+                    <li><b>Pontuação Dinâmica:</b> O score pisca em dourado ao atingir novos Tiers de dificuldade.</li>
+                    <li><b>Nuvens (Fase 2):</b> Novo sistema de partículas híbrido criando um efeito de neblina suave e contínua.</li>
+                </ul>
+            </li>
+            <li><b>Correções de Bugs:</b>
+                <ul>
+                    <li>Corrigido erro que impedia o spawn de detritos no Final Boss.</li>
+                    <li>Corrigida a ordem de renderização da escuridão (agora cobre o jogador corretamente).</li>
+                    <li>Corrigido o fundo da tela de Game Over (agora mostra o cenário correto da fase onde o jogador morreu).</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    
+    <div id="pointingArrow">
+        <div class="arrow-body"><div class="arrow-line"></div><div class="arrow-line"></div></div>
+        <div class="arrow-head"></div>
+    </div>
+    <div id="versionLabel" class="version-label">Alpha v2.3</div>
+
+    <!-- NOVO PAINEL DE DEBUG -->
+    <div id="debugPanel">
+        <div id="debugDragHandle">
+            <span>&#9654;</span>
+        </div>
+
+        <div class="debug-header">
+            <span>DEBUG MENU</span>
+            <button id="closeDebugPanel">X</button>
+        </div>
+        
+        <div class="debug-tabs">
+            <button class="tab-btn active" data-tab="tab-general">GERAL</button>
+            <button class="tab-btn" data-tab="tab-spawn">SPAWN</button>
+        </div>
+
+        <div class="debug-body">
+            <!-- ABA GERAL -->
+            <div id="tab-general" class="tab-content active">
+                <div class="debug-group">
+                    <label>Status</label>
+                    <div class="debug-row"><div class="debug-info"><span class="key-tag">RCTRL+NUM 1</span><span>- +1 VIDA</span></div><button id="btn-add-life" class="debug-action-small">ADD</button></div>
+                    <div class="debug-row"><div class="debug-info"><span class="key-tag">RCTRL+NUM 2</span><span>- -1 VIDA</span></div><button id="btn-sub-life" class="debug-action-small">SUB</button></div>
+                    <div class="debug-row"><div class="debug-info"><span class="key-tag">RCTRL+NUM 3</span><span>- INVENCÍVEL</span></div><button id="btn-godmode" class="debug-toggle">OFF</button></div>
+                </div>
+                <div class="debug-group">
+                    <label>Pontuação</label>
+                    <div class="debug-row"><div class="debug-info"><span class="key-tag">RCTRL+NUM 4</span><span>- +100 PTS</span></div><button id="btn-add-score" class="debug-action-small">ADD</button></div>
+                    <div class="debug-row"><div class="debug-info"><span class="key-tag">RCTRL+NUM 5</span><span>- -100 PTS</span></div><button id="btn-sub-score" class="debug-action-small">SUB</button></div>
+                    <div class="debug-row"><div class="debug-info"><span class="key-tag">RCTRL+NUM 6</span><span>- TRAVAR PTS</span></div><button id="btn-lock-score" class="debug-toggle">OFF</button></div>
+                </div>
+                <div class="debug-group">
+                    <label>Sistema</label>
+                    <div class="debug-row"><div class="debug-info"><span class="key-tag">RCTRL+NUM 7</span><span>- HITBOXES</span></div><button id="btn-hitbox" class="debug-toggle">OFF</button></div>
+                </div>
+                <div class="debug-group">
+                    <label>Transporte</label>
+                    <div class="debug-row"><div class="debug-info"><span class="key-tag">RCTRL+NUM 8</span><span>- FASE 1</span></div><button id="btn-phase-1" class="debug-action-small">IR</button></div>
+                    <div class="debug-row"><div class="debug-info"><span class="key-tag">RCTRL+NUM 9</span><span>- FASE 2</span></div><button id="btn-phase-2" class="debug-action-small">IR</button></div>
+                </div>
+                <div class="debug-group">
+                    <label>Boss</label>
+                    <div class="debug-row"><div class="debug-info"><span class="key-tag">RCTRL+NUM 0</span><span>- DANO BOSS</span></div><button id="btn-dmg-boss" class="debug-action-small">HIT</button></div>
+                </div>
+            </div>
+
+            <!-- ABA SPAWN (REFORMULADA COM CORES E TEXTO OFF) -->
+            <div id="tab-spawn" class="tab-content">
+                <div class="debug-info-text">Selecione e clique na tela</div>
+                
+                <div class="debug-group">
+                    <label>Inimigos</label>
+                    <div class="debug-row">
+                        <div class="debug-info"><span class="key-tag">LCTRL+1</span><span class="lbl-purple">- STRAIGHT</span></div>
+                        <button class="debug-toggle spawn-select" data-type="enemy-straight">OFF</button>
+                    </div>
+                    <div class="debug-row">
+                        <div class="debug-info"><span class="key-tag">LCTRL+2</span><span class="lbl-yellow">- HOMING</span></div>
+                        <button class="debug-toggle spawn-select" data-type="enemy-homing">OFF</button>
+                    </div>
+                    <div class="debug-row">
+                        <div class="debug-info"><span class="key-tag">LCTRL+3</span><span class="lbl-green">- CHARGER</span></div>
+                        <button class="debug-toggle spawn-select" data-type="enemy-charger">OFF</button>
+                    </div>
+                    <div class="debug-row">
+                        <div class="debug-info"><span class="key-tag">LCTRL+4</span><span class="lbl-blue">- REBOUND</span></div>
+                        <button class="debug-toggle spawn-select" data-type="enemy-rebound">OFF</button>
+                    </div>
+                    <div class="debug-row">
+                        <div class="debug-info"><span class="key-tag">LCTRL+5</span><span class="lbl-beige">- PATROL</span></div>
+                        <button class="debug-toggle spawn-select" data-type="enemy-patrol">OFF</button>
+                    </div>
+                    <div class="debug-row">
+                        <div class="debug-info"><span class="key-tag">LCTRL+6</span><span class="lbl-gray">- PEDRA</span></div>
+                        <button class="debug-toggle spawn-select" data-type="enemy-rock">OFF</button>
+                    </div>
+                </div>
+
+                <div class="debug-group">
+                    <label>Itens & Obj.</label>
+                    <div class="debug-row">
+                        <div class="debug-info"><span class="key-tag">LCTRL+7</span><span class="lbl-yellow">- MOEDA</span></div>
+                        <button class="debug-toggle spawn-select" data-type="item-coin">OFF</button>
+                    </div>
+                    <div class="debug-row">
+                        <div class="debug-info"><span class="key-tag">LCTRL+8</span><span class="lbl-red">- VIDA</span></div>
+                        <button class="debug-toggle spawn-select" data-type="item-health">OFF</button>
+                    </div>
+                    <div class="debug-row">
+                        <div class="debug-info"><span class="key-tag">LCTRL+9</span><span class="lbl-brown">- BAÚ</span></div>
+                        <button class="debug-toggle spawn-select" data-type="obj-chest">OFF</button>
+                    </div>
+                    <div class="debug-row">
+                        <div class="debug-info"><span class="key-tag">LCTRL+0</span><span class="lbl-gray">- JANELA</span></div>
+                        <button class="debug-toggle spawn-select" data-type="obj-window">OFF</button>
+                    </div>
+                    <div class="debug-row">
+                        <div class="debug-info"><span class="key-tag">LCTRL+-</span><span class="lbl-falling">- PLAT. CAI</span></div>
+                        <button class="debug-toggle spawn-select" data-type="obj-falling">OFF</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="player.js"></script> 
+    <script src="platform.js"></script> 
+    <script src="enemy.js"></script>
+    <script src="boss.js"></script>
+    <script src="item.js"></script>
+    <script src="scenery.js"></script>
+    
+    <script src="game.js"></script>
+
+</body>
+</html>
